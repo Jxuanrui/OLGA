@@ -1,0 +1,38 @@
+{
+  "name": "fetal_gut_developing",
+  "source_h5ad": "data/raw/reference_atlases/fetal_gut_6-11PCW.h5ad",
+  "n_cells": 62849,
+  "n_genes": 25770,
+  "n_cell_states": 21,
+  "cluster_column": "cell_type",
+  "symbol_source": "feature_name",
+  "min_cells": 10,
+  "cell_states": [
+    "colon epithelial cell",
+    "endothelial cell of artery",
+    "endothelial cell of lymphatic vessel",
+    "enteric neuron",
+    "enteric smooth muscle cell",
+    "enterocyte",
+    "enteroendocrine cell",
+    "epithelial cell",
+    "erythroblast",
+    "fibroblast",
+    "hematopoietic cell",
+    "interstitial cell of Cajal",
+    "intestine goblet cell",
+    "mesodermal cell",
+    "mesothelial cell",
+    "myofibroblast cell",
+    "neural crest cell",
+    "pericyte",
+    "progenitor cell",
+    "stem cell",
+    "vein endothelial cell"
+  ],
+  "method": {
+    "tau": "sum_i(1-x_i/x_max)/(n-1) on mean expm1(log-normalised X)",
+    "markers_strict": "argmax state, expr>=0.5, margin>=0.25"
+  },
+  "licence_note": "derived statistics only; cite the original atlas"
+}
