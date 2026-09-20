@@ -15,8 +15,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 from .attribution import super_lineage_of  # noqa: E402
 
-CHAINS_FIELDS = ["gene", "cell_state", "lineage", "super_lineage", "evidence_tier",
-                 "n_refs_covering", "n_agree", "tau_mean", "per_pack_detail"]
+CHAINS_FIELDS = ["gene", "trait_id", "locus_id", "lead_snp", "cell_state", "lineage",
+                 "super_lineage", "evidence_tier", "n_refs_covering", "n_agree",
+                 "tau_mean", "per_pack_detail"]
 
 
 def write_chains(results: list[dict], out_tsv: Path) -> None:
@@ -29,6 +30,9 @@ def write_chains(results: list[dict], out_tsv: Path) -> None:
                                for k, v in r["per_pack"].items()) or ""
             w.writerow({
                 "gene": r["gene"],
+                "trait_id": r.get("trait_id", ""),
+                "locus_id": r.get("locus_id", ""),
+                "lead_snp": r.get("lead_snp", ""),
                 "cell_state": r["consensus_state"] or "",
                 "lineage": r["consensus_lineage"] or "",
                 "super_lineage": r.get("consensus_super_lineage") or "",

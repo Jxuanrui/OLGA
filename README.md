@@ -24,8 +24,15 @@ olga list-reference
 
 Four gut reference packs ship as derived statistics (~46 MB total):
 `uc_gut_smillie` (51 states), `fetal_gut_developing` (21), `ts_colon` (28),
-`ts_small_intestine` (34). Building custom packs from any annotated h5ad is
-planned for an upcoming release (tracked in Issues).
+`ts_small_intestine` (34). Build your own pack from any annotated h5ad:
+
+```bash
+olga build-reference --atlas atlas.h5ad --name my_gut --out packs/my_gut
+olga attribute --genes FUT2 --refs packs --out out/
+```
+
+After installing, run `olga verify` to self-check the reference packs, lineage
+rules and golden attributions.
 
 ## Use
 
