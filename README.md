@@ -1,94 +1,108 @@
 # OLGA
 
-**O**ligogenic **L**ocus-resolved **G**enetic **A**ttribution — attributing
-microbiome GWAS signals to effector genes and host cell types.
+Oligogenic Locus-resolved Genetic Attribution: attributing microbiome GWAS
+signals to effector genes and host cell types.
 
-## Why this exists
-
-Microbial GWAS are **oligogenic**: 17 of 131 MiBioGen taxa carry a genome-wide
-significant locus and 16 of those carry exactly one independent locus. Methods
-that aggregate the top-1000 genes (scBPS / scDRS / scPagwas style) therefore
-dilute a 1–3 gene signal among ~1000 noise genes, and their enrichment tests are
-null on real microbiome data. OLGA is locus-resolved instead: it defines the
-1–3 independent loci, anchors the effector gene by eQTL colocalisation, and
-attributes it to a cell type — then decides with calibrated statistics and
-independent replication rather than a colocalisation score.
+Microbial GWAS are oligogenic — in MiBioGen, 17 of 131 taxa carry an
+independent genome-wide significant locus and 16 of those carry exactly one. Methods
+that score the top-1000 genes dilute a 1-3 gene signal among noise. OLGA
+works at the locus instead: define the independent loci, anchor the
+effector gene by eQTL colocalisation, attribute it to a cell type, and
+arbitrate by independent replication rather than by a colocalisation score.
 
 ## Install
 
 ```bash
 pip install .
-# raw single-cell atlases are NOT required; derived reference packs ship with the tool
+olga verify
+```
+
+`olga verify` checks the bundled reference packs, lineage rules and four
+golden attributions on a fresh install.
+
+## Usage
+
+Attribute a list of genes:
+
+```bash
 olga list-reference
+olga run --genes FUT2,MCM6,LCT --out results/
 ```
 
-Four gut reference packs ship as derived statistics (~46 MB total):
-`uc_gut_smillie` (51 states), `fetal_gut_developing` (21), `ts_colon` (28),
-`ts_small_intestine` (34). Build your own pack from any annotated h5ad:
+Attribute every locus in an OLGA effector table (columns `trait_id`,
+`locus_id`, `lead_snp`, `effector_gene`); the chain columns carry through
+to the output:
 
 ```bash
-olga build-reference --atlas atlas.h5ad --name my_gut --out packs/my_gut
-olga attribute --genes FUT2 --refs packs --out out/
+olga run --genes-file effector_genes.tsv --out results/
 ```
 
-After installing, run `olga verify` to self-check the reference packs, lineage
-rules and golden attributions.
-
-## Use
+Use a subset of reference packs:
 
 ```bash
-# attribute effector genes (usually from the colocalisation step) to cell types
-olga run --genes LCT,MCM6,FUT2 --out results/
-
-# inspect a subset of reference packs
-olga attribute --genes CHST1 --reference uc_gut_smillie fetal_gut_developing --out out/
+olga attribute --genes FUT2 --reference uc_gut_smillie ts_colon --out results/
 ```
 
-Outputs (tables + publication figures, **not** a narrative report):
+Outputs, per run:
 
-```
-results/
-├── chains.tsv                  gene, cell_state, lineage, evidence_tier,
-│                               n_refs_covering, n_agree, tau_mean, per-pack detail
-├── celltypes/<gene>.celltype.{png,pdf}   tau per reference pack, consensus highlighted
-├── evidence_tiers.png
-└── run_manifest.json
+- `chains.tsv` — gene, trait, locus, lead SNP, consensus cell state,
+  lineage, evidence tier, per-pack detail
+- `celltypes/<gene>.celltype.{png,pdf}` — tau per reference pack
+- `evidence_tiers.png`, `run_manifest.json`
+
+## Reference packs
+
+Four packs ship with the package (derived statistics, about 46 MB total;
+raw atlases are not redistributed):
+
+| pack | states | source |
+|---|---|---|
+| `uc_gut_smillie` | 51 | Smillie et al., Cell 2019 |
+| `fetal_gut_developing` | 21 | Elmentaite et al., Cell 2021 |
+| `ts_colon` | 28 | Tabula Sapiens, Science 2022 |
+| `ts_small_intestine` | 34 | Tabula Sapiens, Science 2022 |
+
+Build a pack from any annotated h5ad (multiple atlases merge on the gene
+union with per-atlas state prefixes):
+
+```bash
+olga build-reference --atlas epi.h5ad --atlas lp.h5ad --label Epi --label LP \
+    --name my_gut --out packs/my_gut   # --cluster-col auto-detected if omitted
+olga run --genes FUT2 --refs packs --out results/
 ```
 
 ## Evidence tiers
 
-Cross-atlas consensus is computed at the coarse lineage level (atlases disagree
-on epithelial subtypes far more than on compartments), and reported honestly:
+Consensus is judged at the lineage level, because atlases disagree on
+epithelial subtypes far more than on compartments:
 
 | tier | meaning |
 |---|---|
-| `cell_type_confirmed` | all covering references agree on the lineage |
-| `cell_type_consensus_partial` | majority agree, at least one disagrees |
+| `cell_type_confirmed` | every covering reference agrees on the lineage |
+| `cell_type_consensus_partial` | at least two references agree on the lineage, at least one disagrees |
 | `cell_type_single` | only one reference covers the gene |
-| `cell_type_discordant` | no majority |
+| `cell_type_discordant` | fewer than two references agree |
 | `gene_not_in_reference` | gene absent from every reference |
 
-## Known limits (stated, not hidden)
+## Limitations
 
-* Cell-type attribution uses **expression specificity (tau)**, which is a proxy
-  for — not proof of — the causal cell type. Fixing this properly needs
-  cell-type-specific eQTL, which does not yet exist at scale for gut.
-* Coverage is bounded by the reference. LCT, for example, is absent from the
-  adult UC atlas (adults do not express lactase) and is only recovered by adding
-  the fetal-gut and small-intestine references.
-* **Colocalisation is not truth.** A locus can reach PP.H4 > 0.97 and still fail
-  independent replication; the binding constraint is the truth of the GWAS signal
-  (winner's curse), not the colocalisation statistic. Always run a replication
-  cohort when one exists.
+- Attribution uses expression specificity (tau), a proxy for the causal
+  cell type. Cell-type-specific eQTL would settle it; for gut this has only
+  recently become available (IBDverse, Alegbe et al., Nature 2026) and is
+  not yet wired in.
+- Coverage follows the reference packs. LCT is absent from the adult UC
+  atlas (adults do not express lactase) and is recovered only through the
+  fetal and small-intestine packs.
+- A locus can reach PP.H4 above 0.97 and still fail replication. The truth
+  of the GWAS signal, not the colocalisation statistic, is the binding
+  constraint; run a replication cohort whenever one exists.
 
 ## Citation
 
-A methods manuscript is in preparation; this repository is the reference
-implementation. Until then, please cite the underlying data resources:
-MiBioGen (Kurilshikov et al., *Nat Genet* 2021), Smillie et al. (*Cell* 2019),
-Tabula Sapiens (Tabula Sapiens Consortium, *Science* 2022), SCENIC+ (Bravo
-González-Blas et al., *Nat Methods* 2023).
+A methods manuscript is in preparation. Until then, cite the data resources:
+MiBioGen (Kurilshikov et al., Nat Genet 2021); Smillie et al., Cell 2019;
+Elmentaite et al., Cell 2021; Tabula Sapiens Consortium, Science 2022.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT.
