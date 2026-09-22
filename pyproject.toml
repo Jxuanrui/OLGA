@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "olga"
-version = "0.1.0"
+version = "0.1.1"
 description = "Oligogenic Locus-resolved Genetic Attribution for microbiome GWAS"
 requires-python = ">=3.10"
 dependencies = [
@@ -23,4 +23,4 @@ olga = "olga.cli:main"
 packages = ["olga"]
 
 [tool.setuptools.package-data]
-olga = ["data/celltype_refs/*/*"]
+olga = ["data/*.json", "data/celltype_refs/*/*"]
