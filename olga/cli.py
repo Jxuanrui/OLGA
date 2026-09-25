@@ -1,4 +1,12 @@
-"""Command-line interface for OLGA."""
+"""Command-line interface for the olga software package.
+
+The package implements the CELL-TYPE ATTRIBUTION stage of the OLGA framework
+(multi-atlas tau attribution with lineage consensus and evidence tiers), plus
+reference-pack construction and self-verification. The remaining framework
+stages — locus resolution, effector-gene inference, QTL colocalisation and
+independent replication — are research-pipeline analyses described in the
+manuscript, not features of this CLI (see README, Scope).
+"""
 from __future__ import annotations
 
 import argparse
@@ -17,7 +25,8 @@ from .verify import verify as run_verify
 def cmd_list_reference(args) -> int:
     packs = list_packs(Path(args.refs) if args.refs else None)
     if not packs:
-        print("no reference packs found; run `olga init` or set OLGA_REFS")
+        print("no reference packs found; use --refs DIR or set OLGA_REFS "
+              "(the pip package bundles four gut reference packs)")
         return 1
     print(f"{'name':28s} {'states':>7s} {'genes':>7s}")
     for m in packs:

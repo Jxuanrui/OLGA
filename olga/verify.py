@@ -23,8 +23,13 @@ LINEAGE_CHECKS = {
 }
 
 
-def verify() -> tuple[int, list[str]]:
+def verify() -> int:
     checks: list[tuple[bool, str]] = []
+
+    import matplotlib  # noqa: F401  (outputs hard-fail without it)
+    import numpy
+    checks.append((True, f"core imports ok (numpy {numpy.__version__}, "
+                         f"matplotlib {matplotlib.__version__})"))
 
     packs_meta = list_packs()
     checks.append((len(packs_meta) >= 4,
@@ -35,6 +40,22 @@ def verify() -> tuple[int, list[str]]:
         tau_rows = sum(1 for _ in open(Path(m["_path"]) / "tau_matrix.tsv")) - 1
         checks.append((man_genes == tau_rows,
                        f"{m['name']}: manifest n_genes={man_genes} == tau rows={tau_rows}"))
+        # markers_strict is optional on disk but load-bearing for the
+        # marker_state attribution field — a pack shipped without it must not
+        # pass silently
+        mk = Path(m["_path"]) / "markers_strict.tsv"
+        mk_rows = (sum(1 for _ in open(mk)) - 1) if mk.exists() else -1
+        checks.append((mk_rows > 0,
+                       f"{m['name']}: markers_strict rows={mk_rows} (>0 required)"))
+        expr = Path(m["_path"]) / "expr_by_cluster.tsv"
+        if expr.exists():
+            with expr.open() as fh:
+                n_cols = len(fh.readline().rstrip("\n").split("\t")) - 1
+            checks.append((n_cols == m.get("n_cell_states"),
+                           f"{m['name']}: expr_by_cluster states={n_cols} "
+                           f"== manifest {m.get('n_cell_states')}"))
+        else:
+            checks.append((False, f"{m['name']}: expr_by_cluster.tsv missing"))
 
     for state, want in LINEAGE_CHECKS.items():
         got = lineage_of(state)

@@ -4,17 +4,17 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "olga"
-version = "0.1.1"
-description = "Oligogenic Locus-resolved Genetic Attribution for microbiome GWAS"
+version = "0.1.2"
+description = "Oligogenic Locus-resolved Genetic Attribution: cell-type attribution stage of the OLGA framework for microbiome GWAS"
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24",
-    "scipy>=1.10",
-    "pandas>=2.0",
     "matplotlib>=3.7",
-    "pysam>=0.22",
     "anndata>=0.10",
 ]
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
 
 [project.scripts]
 olga = "olga.cli:main"

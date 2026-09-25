@@ -91,6 +91,10 @@ def build_reference(atlases: list[tuple[str, str | None]], name: str, out_path: 
         del adata, X
 
     G, C = len(gene_index), len(state_names)
+    if C == 0:
+        raise SystemExit(
+            f"no cell state reached MIN_CELLS={MIN_CELLS} in any input atlas; "
+            "nothing to build a reference from")
     E = np.zeros((G, C), dtype=np.float64)
     col = 0
     for syms, states, M in means:
@@ -107,13 +111,15 @@ def build_reference(atlases: list[tuple[str, str | None]], name: str, out_path: 
         ratio = np.where(E.max(axis=1, keepdims=True) > 0,
                          E / np.where(E.max(axis=1, keepdims=True) > 0,
                                       E.max(axis=1, keepdims=True), 1.0), 0.0)
-        tau[valid] = ((1.0 - ratio[valid]).sum(axis=1)) / (C - 1)
+        if C > 1:
+            tau[valid] = ((1.0 - ratio[valid]).sum(axis=1)) / (C - 1)
     top = np.argmax(E, axis=1)
 
     strict = []
     order = np.argsort(-E, axis=1)
     for i, g in enumerate(genes):
-        best, second = order[i, 0], order[i, 1]
+        best = order[i, 0]
+        second = order[i, 1] if C > 1 else best   # single-state pack: no contrast
         val, val2 = E[i, best], E[i, second]
         if val < MIN_LOG2FC or (val - val2) < MIN_MARGIN:
             continue

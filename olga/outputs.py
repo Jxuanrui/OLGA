@@ -26,7 +26,7 @@ def write_chains(results: list[dict], out_tsv: Path) -> None:
         w = csv.DictWriter(fh, delimiter="\t", fieldnames=CHAINS_FIELDS)
         w.writeheader()
         for r in results:
-            detail = "; ".join(f"{k}:{v['cell_state']}(tau={v['tau']})"
+            detail = "; ".join(f"{k}:{v['cell_state']}(tau={'NA' if v['tau'] is None else v['tau']})"
                                for k, v in r["per_pack"].items()) or ""
             w.writerow({
                 "gene": r["gene"],

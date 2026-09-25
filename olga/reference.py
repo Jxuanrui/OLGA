@@ -31,9 +31,15 @@ def list_packs(root: Path | None = None) -> list[dict]:
     if not root.exists():
         return packs
     for d in sorted(root.iterdir()):
-        man = d / "manifest.json"
-        if man.exists():
+        try:
+            man = d / "manifest.json"
+            tau = d / "tau_matrix.tsv"
+            if not (man.is_file() and tau.is_file()):
+                continue   # a pack needs both; manifest-only dirs are not packs
             m = json.loads(man.read_text())
+        except (OSError, ValueError):
+            continue   # unreadable dir or malformed manifest: skip, not a pack
+        if isinstance(m, dict) and "name" in m:
             m["_path"] = str(d)
             packs.append(m)
     return packs
@@ -70,9 +76,13 @@ class Pack:
         r = self.tau.get(gene)
         if not r:
             return None
+        # packs built by the research pipeline encode non-finite tau as the
+        # literal "nan"; treat it exactly like the tool's empty-string encoding
+        tau = float(r["tau"]) if r["tau"] and r["tau"].lower() != "nan" else None
+        expr = float(r["top_expr"]) if r["top_expr"] and r["top_expr"].lower() != "nan" else None
         return {"cell_state": r["top_cell_state"],
-                "tau": float(r["tau"]) if r["tau"] else None,
-                "expr": float(r["top_expr"]) if r["top_expr"] else None,
+                "tau": tau,
+                "expr": expr,
                 "marker_state": self.markers.get(gene)}
 
 
