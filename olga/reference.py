@@ -80,6 +80,13 @@ class Pack:
         # literal "nan"; treat it exactly like the tool's empty-string encoding
         tau = float(r["tau"]) if r["tau"] and r["tau"].lower() != "nan" else None
         expr = float(r["top_expr"]) if r["top_expr"] and r["top_expr"].lower() != "nan" else None
+        # silent gene: no measurable specificity AND no expression. A finite
+        # tau always indicates a real (possibly tiny) expression profile -
+        # e.g. top_expr printed as 0.0000 by rounding - so those are kept;
+        # `is None` (not falsiness) because tau = 0.0 is a legal uniformly
+        # expressed gene.
+        if tau is None and (expr is None or expr == 0):
+            return None
         return {"cell_state": r["top_cell_state"],
                 "tau": tau,
                 "expr": expr,

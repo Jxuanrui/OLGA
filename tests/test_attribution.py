@@ -33,7 +33,7 @@ def test_positive_controls_recover(packs):
     assert r["evidence_tier"] in ("cell_type_confirmed",
                                   "cell_type_consensus_partial")
     m = attribute_gene("MCM6", packs)
-    assert super_lineage_of(m["consensus_state"]) == "proliferative"
+    assert super_lineage_of(m["consensus_state"]) == "immune"  # v0.1.3: corrected from proliferative (word-boundary fix)
 
 
 def test_lineage_rules_ordering_and_unknown():
@@ -83,3 +83,36 @@ def test_atlas_disagreement_downgrades_tier(tmp_path):
     p2 = fake_pack("p_imm", "LP|T cell", 0.8)
     assert attribute_gene("GENE", [p1, p2])["evidence_tier"] == "cell_type_discordant"
     assert attribute_gene("GENE", [p1])["evidence_tier"] == "cell_type_single"
+
+
+def test_word_boundary_lineage_regressions():
+    """v0.1.3 regressions: state names containing 'ta ', 't cell' or 'm cell'
+    as substrings must not be misclassified (rule set frozen after the
+    134-state audit; see repository history for the audit table)."""
+    cases = {
+        "CD4-positive, alpha-beta T cell": "immune_t",      # was proliferative
+        "gamma-delta T cell": "immune_t",                   # was proliferative
+        "naive thymus-derived CD4-positive, alpha-beta T cell": "immune_t",
+        "myofibroblast cell": "stromal",                    # was immune_t
+        "neural crest cell": "neural",                      # was immune_t
+        "mast cell": "myeloid",                             # was immune_t
+        "intestinal crypt stem cell of colon": "stem_progenitor",  # was secretory
+        "germ cell": "other",                               # must NOT be secretory
+        "TACIT cell": "other",                              # must NOT be immune_t
+        "Epi|TA 1": "proliferative",                        # anchored 'ta' still hits
+        "Epi|Secretory TA": "proliferative",                # adjudicated
+        "Epi|M cells": "epithelial_secretory",              # anchored 'm cell' still hits
+        "cDC2": "myeloid",                                  # substring 'dc' retained
+    }
+    for state, want in cases.items():
+        assert lineage_of(state) == want, state
+
+
+def test_silent_gene_guard(packs):
+    """v0.1.3 regression: a gene is dropped only when specificity is missing
+    AND expression is zero (AND, not OR)."""
+    uc = next(p for p in packs if p.name == "uc_gut_smillie")
+    tc = next(p for p in packs if p.name == "ts_colon")
+    assert uc.attribute("AANAT") is None            # silent: tau nan + expr 0
+    apo = tc.attribute("APOA4")                     # finite tau, expr prints 0.0000
+    assert apo is not None and apo["tau"] == 1.0    # low-expression specific: KEPT

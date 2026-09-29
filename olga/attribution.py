@@ -9,26 +9,34 @@ proxy for the causal cell type) is made explicit rather than hidden.
 """
 from __future__ import annotations
 
+import re
 from collections import Counter
 
 from .reference import Pack
 
-# keyword -> lineage (ordered: first match wins for the broad classes)
-_LINEAGE_RULES = [
+# keyword -> lineage (ordered: first match wins for the broad classes).
+# Matching is unified through re.search: plain keywords are escaped so their
+# semantics equal the historical substring match; three short/ambiguous keys
+# are anchored to word boundaries because unanchored substrings misclassify
+# real atlas state names:
+#   "beta T cell"        contains "ta "     -> must NOT be proliferative
+#   "myofibroblast cell" contains "t cell"  -> must NOT be immune_t
+#   "germ cell"          contains "m cell"  -> must NOT be epithelial_secretory
+_LINEAGE_RULES_RAW = [
     ("enterocyte", "epithelial_absorptive"),
     ("paneth", "epithelial_secretory"),
     ("goblet", "epithelial_secretory"),
     ("tuft", "epithelial_secretory"),
     ("enteroendocrine", "epithelial_secretory"),
-    ("m cell", "epithelial_secretory"),
+    (r"\bm cells?\b", "epithelial_secretory"),
     ("best4", "epithelial_secretory"),
     ("colon epithelial", "epithelial_other"),
     ("epithelial", "epithelial_other"),
     ("stem", "stem_progenitor"),
     ("progenitor", "stem_progenitor"),
     ("cycling", "proliferative"),
-    ("ta ", "proliferative"),
-    ("t cell", "immune_t"),
+    (r"\bta\b", "proliferative"),
+    (r"\bt cells?\b", "immune_t"),
     ("treg", "immune_t"),
     ("cd4", "immune_t"),
     ("cd8", "immune_t"),
@@ -61,11 +69,16 @@ _LINEAGE_RULES = [
     ("hematopoietic", "immune_other"),
 ]
 
+_LINEAGE_RULES = [
+    (re.compile(p if p.startswith("\\b") or "\\" in p else re.escape(p)), lin)
+    for p, lin in _LINEAGE_RULES_RAW
+]
+
 
 def lineage_of(cell_state: str) -> str:
     s = (cell_state or "").lower()
-    for key, lin in _LINEAGE_RULES:
-        if key in s:
+    for pat, lin in _LINEAGE_RULES:
+        if pat.search(s):
             return lin
     return "other"
 

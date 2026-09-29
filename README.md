@@ -6,8 +6,9 @@ microbiome GWAS signals to effector genes and host cell types.
 **olga software package** (this repository) — the pip-installable implementation
 of the framework's cell-type attribution stage.
 
-Microbial GWAS are oligogenic — in MiBioGen, 17 of 131 taxa carry an
-independent genome-wide significant locus and 16 of those carry exactly one.
+In the MiBioGen genus panel examined with OLGA, 17 of 131 taxa carry a
+genome-wide significant SNP (P<5e-8) and 16 of those show exactly one
+detectable independent locus (r2<0.1, 500 kb).
 Methods that score the top-1000 genes dilute a 1-3 gene signal among noise.
 The OLGA framework works at the locus instead: define the independent loci,
 anchor the effector gene by eQTL colocalisation, attribute it to a cell type,
@@ -41,7 +42,9 @@ olga verify
 ```
 
 `olga verify` checks the bundled reference packs, lineage rules and four
-golden attributions on a fresh install. Runtime dependencies are numpy,
+golden attributions on a fresh install. If the `OLGA_REFS` environment
+variable is set, `olga verify` checks the packs under that directory
+instead of the bundled ones. Runtime dependencies are numpy,
 matplotlib and anndata (anndata is only needed by `build-reference`).
 
 ## Usage
@@ -111,7 +114,12 @@ olga run --genes FUT2 --refs packs --out results/
 ```
 
 Point `--refs` at a directory of pack folders, or set the `OLGA_REFS`
-environment variable to make it the default reference root. A pack folder
+environment variable to make it the default reference root. Pointing
+`--refs` at a custom directory replaces the bundled packs for that run; to
+combine custom and bundled packs, copy the bundled pack folders into your
+refs directory. `build-reference` expects the atlas `X` matrix to be
+log1p-normalised (it applies `expm1` before averaging); raw counts will
+produce wrong tau values. A pack folder
 must contain `manifest.json` and `tau_matrix.tsv` (`markers_strict.tsv` and
 `expr_by_cluster.tsv` ship with the bundled packs; other directories in the
 refs root are ignored).

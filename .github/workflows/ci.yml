@@ -24,3 +24,7 @@ jobs:
         run: pytest tests/ -v
       - name: Pack + behaviour self-check
         run: olga verify
+      - name: CLI end-to-end smoke
+        run: |
+          olga run --genes FUT2,MCM6,LCT --out /tmp/smoke
+          grep -P "^FUT2\t" /tmp/smoke/chains.tsv | awk -F'\t' '$8=="cell_type_confirmed"{found=1} END{exit !found}'

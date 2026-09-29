@@ -1,9 +1,29 @@
 {
-  "note": "Golden attributions on the four bundled reference packs (olga 0.1.0). States and tiers are stable invariants; tau values are deliberately NOT pinned (they may shift on pack rebuilds).",
+  "note": "Golden attributions on the four bundled reference packs. States and tiers are stable invariants; tau values are deliberately NOT pinned (they may shift on pack rebuilds). v0.1.3: MCM6 corrected from proliferative/LP|Cycling T to immune/regulatory T cell after the word-boundary lineage fix ('alpha-beta T cell' previously matched the 'ta ' substring rule); see CHANGELOG errata.",
   "genes": [
-    {"gene": "FUT2", "consensus_state": "Epi|Enterocytes", "super_lineage": "epithelial", "tier": "cell_type_confirmed"},
-    {"gene": "MCM6", "consensus_state": "LP|Cycling T", "super_lineage": "proliferative", "tier": "cell_type_consensus_partial"},
-    {"gene": "LCT", "consensus_state": "enterocyte", "super_lineage": "epithelial", "tier": "cell_type_consensus_partial"},
-    {"gene": "CHST1", "consensus_state": "endothelial cell of arteriole", "super_lineage": "endothelial", "tier": "cell_type_consensus_partial"}
+    {
+      "gene": "FUT2",
+      "consensus_state": "Epi|Enterocytes",
+      "super_lineage": "epithelial",
+      "tier": "cell_type_confirmed"
+    },
+    {
+      "gene": "MCM6",
+      "consensus_state": "regulatory T cell",
+      "super_lineage": "immune",
+      "tier": "cell_type_consensus_partial"
+    },
+    {
+      "gene": "LCT",
+      "consensus_state": "enterocyte",
+      "super_lineage": "epithelial",
+      "tier": "cell_type_consensus_partial"
+    },
+    {
+      "gene": "CHST1",
+      "consensus_state": "endothelial cell of arteriole",
+      "super_lineage": "endothelial",
+      "tier": "cell_type_consensus_partial"
+    }
   ]
 }

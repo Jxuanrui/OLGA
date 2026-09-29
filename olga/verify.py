@@ -20,6 +20,13 @@ LINEAGE_CHECKS = {
     "enterocyte of epithelium proper of jejunum": "epithelial_absorptive",
     "tuft cell of colon": "epithelial_secretory",
     "plasma cell": "immune_b",
+    # word-boundary regressions (v0.1.3): these state names contain the
+    # substrings "ta ", "t cell" or "m cell" and were misclassified in <=0.1.2
+    "CD4-positive, alpha-beta T cell": "immune_t",
+    "myofibroblast cell": "stromal",
+    "neural crest cell": "neural",
+    "mast cell": "myeloid",
+    "Epi|Secretory TA": "proliferative",
 }
 
 

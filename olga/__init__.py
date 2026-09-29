@@ -1,6 +1,6 @@
 """OLGA: Oligogenic Locus-resolved Genetic Attribution.
 
-Locus-resolved attribution of microbiome GWAS signals to effector genes and
-host cell types, with multi-atlas consensus and calibrated statistical control.
+The cell-type attribution stage of the OLGA framework for microbiome GWAS,
+with multi-atlas consensus and evidence tiers.
 """
-__version__ = "0.1.2"
+__version__ = "0.1.3"

@@ -17,7 +17,7 @@ def test_run_readme_example(tmp_path):
             csv.DictReader((out / "chains.tsv").open(), delimiter="\t")}
     assert rows["FUT2"]["evidence_tier"] == "cell_type_confirmed"
     assert rows["FUT2"]["super_lineage"] == "epithelial"
-    assert rows["MCM6"]["super_lineage"] == "proliferative"
+    assert rows["MCM6"]["super_lineage"] == "immune"  # v0.1.3 correction
     assert (out / "run_manifest.json").exists()
     assert (out / "celltypes" / "FUT2.celltype.png").exists()
 
