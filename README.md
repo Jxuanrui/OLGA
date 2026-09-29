@@ -147,8 +147,8 @@ epithelial subtypes far more than on compartments:
   recently become available (IBDverse, Alegbe et al., Nature 2026) and is
   not yet wired in.
 - Coverage follows the reference packs. LCT is absent from the adult UC
-  atlas (adults do not express lactase) and is recovered only through the
-  fetal and small-intestine packs.
+  atlas (absent from the adult colon atlas used here) and is recovered only
+  through the fetal and small-intestine packs.
 - The framework's locus and colocalisation stages use GRCh37 summary
   statistics with ancestry-matched LD references (mismatched reference
   ancestry inflates gene-level signals; demonstrated for EUR references on
